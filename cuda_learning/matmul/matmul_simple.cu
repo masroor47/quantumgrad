@@ -1,6 +1,6 @@
-#include<stdio.h>
-#include<cuda.h>
-#include<cuda_runtime.h>
+#include <stdio.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 
 __global__ void matmul_simple(float *left, float *right, float *result, int lrows, int lcols, int rrows, int rcols) {
@@ -8,20 +8,20 @@ __global__ void matmul_simple(float *left, float *right, float *result, int lrow
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    float temp_sum = 0.0;
-    if ((row < lrows) && (col < rcols)) {
+    if (row < lrows && col < rcols) {
+        float temp_sum = 0.0;
         // dot product
         for (int i = 0; i < lcols; i++) {
             temp_sum += left[row * lcols + i] * right[i * rcols + col];
         }
         result[row * rcols + col] = temp_sum;
     }
-
 }
 
 void printMatrixPretty(float *matrix, int rows, int cols) {
     if (rows < 4 || cols < 4) {
-        printf("Matrix small to use this nice matrix printer.\n");
+        printf("Matrix too small to use this nice matrix printer.\n");
+        return;
     }
 
     printf("\n");
@@ -54,11 +54,10 @@ void printMatrixPretty(float *matrix, int rows, int cols) {
     printf("(%i, %i)\n\n", rows, cols);
 }
 
-
 int main() {
     int leftRows = 2048;
-    int leftCols = 1024;
-    int rightRows = 1024;
+    int leftCols = 4096;
+    int rightRows = 4096;
     int rightCols = 4096;
 
     int leftSize = leftRows * leftCols;
@@ -69,7 +68,6 @@ int main() {
         printf("Shapes don't match for matmul\n");
         return -1;
     }
-    
 
     float *left, *right, *result;
     
@@ -80,10 +78,15 @@ int main() {
 
     for (int r = 0; r < leftRows; r++) {
         for (int c = 0; c < leftCols; c++) {
-            left[r * leftCols + c] = 1;
-            right[c * rightCols + r] = 1;
+            left[r * leftCols + c] = 1.0f;
         }
     }
+    for (int r = 0; r < rightRows; r++) {
+        for (int c = 0; c < rightCols; c++) {
+            right[r * rightCols + c] = 1.0f;
+        }
+    }
+    
     printf("Initialized matrices on host\n");
     printMatrixPretty(left, leftRows, leftCols);
     printMatrixPretty(right, rightRows, rightCols);
@@ -98,7 +101,7 @@ int main() {
     cudaMemcpy(d_left, left, leftSize * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_right, right, rightSize * sizeof(float), cudaMemcpyHostToDevice);
 
-    printf("Copied matrices ot device\n");
+    printf("Copied matrices to device\n");
 
     int BLOCK_SIZE = 16;
     int GRID_SIZE_ROWS = (int)ceil((float)leftRows / BLOCK_SIZE);
@@ -118,7 +121,7 @@ int main() {
     if (kernelErr != cudaSuccess) {
         printf("Kernel launch failed: %s\n", cudaGetErrorString(kernelErr));
     } else {
-        printf("Completed successfully\n");
+        printf("Kernel completed successfully\n");
     }
 
     cudaMemcpy(result, d_result, resultSize * sizeof(float), cudaMemcpyDeviceToHost);
@@ -130,4 +133,9 @@ int main() {
     printf("\n");
     printMatrixPretty(result, leftRows, rightCols);
 
+    cudaFreeHost(left);
+    cudaFreeHost(right);
+    cudaFreeHost(result);
+
+    return 0;
 }

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <cuda_runtime.h>
 
 __global__ void add_matrices(float *a, float *b, float *c, int rows, int cols) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -25,17 +26,35 @@ __global__ void matmul_simple_(float *left, float *right, float *result, int lro
     }
 }
 
+void cudaCheckError(cudaError_t err, const char* msg) {
+    if (err != cudaSuccess) {
+        printf("%s: %s\n", msg, cudaGetErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+}
+
 extern "C" void add(float *a, float *b, float *c, int rows, int cols) {
     float *d_a, *d_b, *d_c;
+    size_t size = rows * cols * sizeof(float);
 
-    printf("Allocating %.2f GB of GPU memory\n", (double)(rows * cols * sizeof(float) * 3) / (1024 * 1024 * 1024));
-    cudaMalloc((void**)&d_a, rows * cols * sizeof(float));
-    cudaMalloc((void**)&d_b, rows * cols * sizeof(float));
-    cudaMalloc((void**)&d_c, rows * cols * sizeof(float));
+    cudaError_t err;
 
-    cudaMemcpy(d_a, a, rows*cols*sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_b, b, rows*cols*sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_c, c, rows*cols*sizeof(float), cudaMemcpyHostToDevice);
+    printf("Allocating %.2f GB of GPU memory\n", (double)(size * 3) / (1024 * 1024 * 1024));
+    
+    err = cudaMalloc((void**)&d_a, size);
+    cudaCheckError(err, "CUDA malloc failed for d_a");
+    
+    err = cudaMalloc((void**)&d_b, size);
+    cudaCheckError(err, "CUDA malloc failed for d_b");
+
+    err = cudaMalloc((void**)&d_c, size);
+    cudaCheckError(err, "CUDA malloc failed for d_c");
+
+    err = cudaMemcpy(d_a, a, size, cudaMemcpyHostToDevice);
+    cudaCheckError(err, "CUDA memcpy failed for d_a");
+
+    err = cudaMemcpy(d_b, b, size, cudaMemcpyHostToDevice);
+    cudaCheckError(err, "CUDA memcpy failed for d_b");
 
     dim3 threadsPerBlock(16, 16);
     dim3 numBlocks((cols + threadsPerBlock.x - 1) / threadsPerBlock.x,
@@ -56,53 +75,33 @@ extern "C" void add(float *a, float *b, float *c, int rows, int cols) {
 }
 
 extern "C" void matmul_simple(float *left, float *right, float *result, int lrows, int lcols, int rrows, int rcols) {
+    if (lcols != rrows) {
+        printf("Matrix dimensions mismatch for multiplication\n");
+        return;
+    }
+
     float *d_left, *d_right, *d_result;
     size_t left_size = lrows * lcols * sizeof(float);
     size_t right_size = rrows * rcols * sizeof(float);
     size_t result_size = lrows * rcols * sizeof(float);
 
-    double total_gb = (left_size + right_size + result_size) / (1024 * 1024 * 1024);
-    printf("Allocating %.2f GB of GPU memory\n", total_gb);
+    printf("Allocating %.2f GB of GPU memory\n", (double)(left_size + right_size + result_size) / (1024 * 1024 * 1024));
 
     cudaError_t err;
     err = cudaMalloc((void**)&d_left, left_size);
-    if (err != cudaSuccess) {
-        printf("CUDA malloc failed for d_left: %s\n", cudaGetErrorString(err));
-        return;
-    }
+    cudaCheckError(err, "CUDA malloc failed for d_left");
 
     err = cudaMalloc((void**)&d_right, right_size);
-    if (err != cudaSuccess) {
-        printf("CUDA malloc failed for d_right: %s\n", cudaGetErrorString(err));
-        cudaFree(d_left);
-        return;
-    }
+    cudaCheckError(err, "CUDA malloc failed for d_right");
 
     err = cudaMalloc((void**)&d_result, result_size);
-    if (err != cudaSuccess) {
-        printf("CUDA malloc failed for d_result: %s\n", cudaGetErrorString(err));
-        cudaFree(d_left);
-        cudaFree(d_right);
-        return;
-    }
+    cudaCheckError(err, "CUDA malloc failed for d_result");
 
     err = cudaMemcpy(d_left, left, left_size, cudaMemcpyHostToDevice);
-    if (err != cudaSuccess) {
-        printf("CUDA memcpy failed for d_left: %s\n", cudaGetErrorString(err));
-        cudaFree(d_left);
-        cudaFree(d_right);
-        cudaFree(d_result);
-        return;
-    }
+    cudaCheckError(err, "CUDA memcpy failed for d_left");
 
     err = cudaMemcpy(d_right, right, right_size, cudaMemcpyHostToDevice);
-    if (err != cudaSuccess) {
-        printf("CUDA memcpy failed for d_right: %s\n", cudaGetErrorString(err));
-        cudaFree(d_left);
-        cudaFree(d_right);
-        cudaFree(d_result);
-        return;
-    }
+    cudaCheckError(err, "CUDA memcpy failed for d_right");
 
     int BLOCK_SIZE = 16;
     int GRID_SIZE_ROWS = (int)ceil((float)lrows / BLOCK_SIZE);

@@ -61,10 +61,9 @@ extern "C" void matmul_simple(float *left, float *right, float *result, int lrow
     size_t right_size = rrows * rcols * sizeof(float);
     size_t result_size = lrows * rcols * sizeof(float);
 
-    // printf("%f, %f, ... %f\n", left[0], left[1], left[lrows * lcols - 1]);
-    // printf("%f, %f, ... %f\n", right[0], right[1], right[rrows * rcols - 1]);
+    double total_gb = (left_size + right_size + result_size) / (1024 * 1024 * 1024);
+    printf("Allocating %.2f GB of GPU memory\n", total_gb);
 
-    printf("Allocating %.2f GB of GPU memory\n", (double)((lrows * lcols + rrows * rcols + lrows * rcols)* sizeof(float)) / (1024 * 1024 * 1024));
     cudaError_t err;
     err = cudaMalloc((void**)&d_left, left_size);
     if (err != cudaSuccess) {
@@ -120,9 +119,6 @@ extern "C" void matmul_simple(float *left, float *right, float *result, int lrow
     }
 
     cudaMemcpy(result, d_result, result_size, cudaMemcpyDeviceToHost);
-
-    // printf("after kernel execution. result:\n");
-    // printf("%f, %f, ... %f\n", result[0], result[1], result[lrows * rcols - 1]);
 
     cudaFree(d_left);
     cudaFree(d_right);

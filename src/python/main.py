@@ -3,21 +3,21 @@ from matrix_ops_wrapper import add_matrices, matmul_simple
 
 
 def test_elementwise_add():
+    print('testing elementwise add')
     rows = 1<<15
     cols = 1<<15
-    rows = int(rows * 1.6)
-    print(f"{rows = }")
     shape = (rows, cols)
     a = np.ones(shape).astype(np.float32)
     b = np.ones(shape).astype(np.float32) * 2
     print(f"a in py main: {a}")
     print(f"b in py main: {b}")
     print()
-    for _ in range(10):
+    for _ in range(1):
         c = add_matrices(a, b)
     print(f"c in py main: \n{c}")
 
 def test_matmul_simple():
+    print('testing matmul simple')
     lrows = 1<<14
     lcols = 1<<15
     rrows = 1<<15

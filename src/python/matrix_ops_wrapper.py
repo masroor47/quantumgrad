@@ -1,7 +1,10 @@
+import os
 import ctypes
 import numpy as np
 
-lib = ctypes.cdll.LoadLibrary('./lib/matrix_ops.so')
+current_dir = os.path.dirname(os.path.abspath(__file__))
+lib_path = os.path.join(current_dir, '../../lib/matrix_ops.so')
+lib = ctypes.cdll.LoadLibrary(lib_path)
 
 lib.add.argtypes = [ctypes.POINTER(ctypes.c_float),
                     ctypes.POINTER(ctypes.c_float),

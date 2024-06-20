@@ -1,2 +1,1 @@
-from .utils import cpu_to_gpu
-from .utils import gpu_to_cpu
+from .wrappers import cpu_to_gpu, gpu_to_cpu

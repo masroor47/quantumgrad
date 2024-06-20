@@ -10,7 +10,7 @@ extern "C" void free_gpu_memory(void* ptr) {
     cudaFree(ptr);
 }
 
-extern "C" void copy_to_gpu(const void* host_data, void* device_data, size_t size) {
+extern "C" void copy_cpu_to_gpu(const void* host_data, void* device_data, size_t size) {
     cudaMemcpy(device_data, host_data, size, cudaMemcpyHostToDevice);
 }
 

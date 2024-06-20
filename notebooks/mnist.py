@@ -1,16 +1,13 @@
-
-
-from quantumgrad.src.python.modules.module import Module
-from quantumgrad.src.python.modules.layer import Linear
-from quantumgrad.src.python.nn.nonlinearities import ReLU
+import quantumgrad.nn as nn
+from quantumgrad.nonlinearities.relu import ReLU
 
 import numpy as np
 
-class BobNet(Module):
+class BobNet(nn.Module):
     def __init__(self, in_nodes, out_nodes):
         super(BobNet, self).__init__()
-        self.fc1 = Linear(in_nodes, 128)
-        self.fc2 = Linear(128, out_nodes)
+        self.fc1 = nn.Linear(in_nodes, 128)
+        self.fc2 = nn.Linear(128, out_nodes)
     
     def forward(self, x):
         x = ReLU(self.fc1(x))

@@ -1,8 +1,8 @@
 import numpy as np
-from ..nn.module import Module
-from ..cuda_wrapper import cuda_interface as cuda
+import quantumgrad.nn as nn
+import quantumgrad.cuda as cuda
 
-class ReLU(Module):
+class ReLU(nn.Module):
     def __init__(self):
         super().__init__()
 

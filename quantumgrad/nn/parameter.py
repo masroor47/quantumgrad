@@ -1,4 +1,4 @@
-import cuda 
+import quantumgrad.cuda as cuda
 
 class Parameter:
     def __init__(self, data):

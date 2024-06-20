@@ -1,6 +1,7 @@
 import numpy as np
-from .module import Module, Parameter
-from ..cuda_wrapper import cuda_interface as cuda
+from quantumgrad.nn.module import Module 
+from quantumgrad.nn.parameter import Parameter
+from quantumgrad import cuda
 
 class Linear(Module):
     def __init__(self, in_features, out_features):

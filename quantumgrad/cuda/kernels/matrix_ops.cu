@@ -33,24 +33,6 @@ void cudaCheckError(cudaError_t err, const char* msg) {
     }
 }
 
-extern "C" void* allocate_gpu_memory(size_t size) {
-    void* ptr;
-    cudaMalloc(&ptr, size);
-    return ptr;
-}
-
-extern "C" void free_gpu_memory(void* ptr) {
-    cudaFree(ptr);
-}
-
-extern "C" void copy_to_gpu(const void* host_data, void* device_data, size_t size) {
-    cudaMemcpy(device_data, host_data, size, cudaMemcpyHostToDevice);
-}
-
-extern "C" void copy_gpu_to_cpu(const void* device_data, void* host_data, size_t size) {
-    cudaMemcpy(host_data, device_data, size, cudaMemcpyDeviceToHost);
-}
-
 extern "C" void add(float *a, float *b, float *c, int rows, int cols) {
     float *d_a, *d_b, *d_c;
     size_t size = rows * cols * sizeof(float);

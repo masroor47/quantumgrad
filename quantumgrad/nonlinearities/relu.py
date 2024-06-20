@@ -1,5 +1,5 @@
 import numpy as np
-from ..modules.module import Module
+from ..nn.module import Module
 from ..cuda_wrapper import cuda_interface as cuda
 
 class ReLU(Module):

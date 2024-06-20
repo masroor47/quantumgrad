@@ -1,4 +1,4 @@
-CUDA_SRC_DIR := src/cuda
+CUDA_SRC_DIR := quantumgrad/src/cuda
 CUDA_OBJ_DIR := lib
 NVCC := nvcc
 

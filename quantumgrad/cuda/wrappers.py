@@ -34,13 +34,13 @@ util_lib.copy_cpu_to_gpu.restype = None
 util_lib.copy_cpu_to_gpu.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
 
 def cpu_to_gpu(data):
-    print('cuda interface: moving cpu to gpu')
+    print('cuda wrapper: moving cpu to gpu')
     gpu_data = util_lib.allocate_gpu_memory(data.size)
     util_lib.copy_cpu_to_gpu(data.ctypes.data, gpu_data, data.size)
     return gpu_data
 
 def gpu_to_cpu(gpu_data, shape):
-    print('cuda interface: moving gpu to cpu')
+    print('cuda wrapper: moving gpu to cpu')
     cpu_data = np.empty(shape, dtype=np.float32)
     util_lib.copy_gpu_to_cpu(gpu_data, cpu_data.ctypes.data, cpu_data.size)
     return cpu_data

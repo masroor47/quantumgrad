@@ -4,7 +4,7 @@ import numpy as np
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 util_lib_path = os.path.join(current_dir, '../../lib/libcudautils.so')
-kernel_lib_path = os.path.join(current_dir, '../../libcudakernels.so')
+kernel_lib_path = os.path.join(current_dir, '../../lib/libcudakernels.so')
 
 util_lib = ctypes.cdll.LoadLibrary(util_lib_path)
 kernel_lib = ctypes.cdll.LoadLibrary(kernel_lib_path)

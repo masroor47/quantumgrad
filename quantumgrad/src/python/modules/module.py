@@ -12,16 +12,17 @@ class Module:
     def to(self, device):
         if self._device == device:
             return self
-        for param in self._parameters:
-            if device == 'cuda':
-                param._data = cuda.cpu_to_gpu(param._data)
-            else:
-                param._data = cuda.gpu_to_cpu(param._data)
+        for param in self.parameters():
+            param.to(device)
         self._device = device
         return self
 
     def parameters(self):
-        return self._parameters
+        params = self._parameters[:]
+        for name, module in self.__dict__.items():
+            if isinstance(module, Module):
+                params.extend(module.parameters())
+        return params
     
     def add_parameter(self, param):
         self._parameters.append(param)
@@ -33,10 +34,20 @@ class Module:
 class Parameter:
     def __init__(self, data):
         self._data = data
+        self._device = 'cpu'
 
     def to(self, device):
         if device == 'cuda':
             self._data = cuda.cpu_to_gpu(self._data)
         else:
             self._data = cuda.gpu_to_cpu(self._data)
+        self._device = device
         return self
+    
+    def numel(self):
+        if self._device == 'cpu':
+            return self._data.size
+        else:
+            # TODO: count param size if data is on cuda
+            print("device is cuda, can't give you the size rn")
+            raise NotImplementedError

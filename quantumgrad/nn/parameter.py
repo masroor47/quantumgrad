@@ -1,5 +1,5 @@
 import quantumgrad.cuda as cuda
-from quantumgrad.tensor import Tensor
+from quantumgrad import Tensor
 
 class Parameter(Tensor):
     def __init__(self, data, device='cpu'):
@@ -7,4 +7,3 @@ class Parameter(Tensor):
 
     def __repr__(self) -> str:
         return f"Parameter data:\n{self.data}\n"
-        

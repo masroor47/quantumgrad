@@ -5,5 +5,7 @@ It's a deep learning framework based on CUDA made from ground up for the sole pu
 
 Starting from as low as efficient matrix multiplies in CUDA all the way to training LLMs (hopefully).
 
+(It has nothing to do with quantum computation, yes it's misleading).
+
 ## How it works
 There are CUDA files which get compiled to a shared library and there are Python wrappers that let you call those compiled CUDA functions from nice old convenient Python.

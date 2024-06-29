@@ -51,6 +51,9 @@ def gpu_to_cpu(gpu_data, shape):
     util_lib.copy_gpu_to_cpu(gpu_data, cpu_data.ctypes.data, total_elements)
     return cpu_data
 
+def free_gpu_memory(gpu_data):
+    util_lib.free_gpu_memory(gpu_data)
+
 def relu(gpu_data, size):
     kernel_lib.relu_kernel(gpu_data, size)
 

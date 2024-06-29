@@ -3,6 +3,7 @@ import quantumgrad.cuda as cuda
 
 class Module:
     def __init__(self):
+        # print('Creating Module')
         self._parameters = []
         self._device = 'cpu'
 
@@ -12,9 +13,23 @@ class Module:
     def to(self, device):
         if self._device == device:
             return self
-        for param in self.parameters():
-            param.to(device)
+        
+        for i, param in enumerate(self._parameters):
+            self._parameters[i] = param.to(device)
+        
+        for name, module in self.__dict__.items():
+            if isinstance(module, Module):
+                setattr(self, name, module.to(device))
+
+        # print device of every parameter
+        print()
+        for param in self._parameters:
+            print(f"param.device: {param.device}")
+        print()
+
+
         self._device = device
+        print(f"Moved module to {self._device}")
         return self
 
     def parameters(self):

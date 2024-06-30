@@ -8,9 +8,14 @@ class Tensor:
         self._device = device
         self._requires_grad = requires_grad
         self._grad = None
-        # self._shape = data.shape if isinstance(data, np.ndarray) else None
 
-        if device == 'cpu':
+        if isinstance(data, Tensor):
+            # If data is already a Tensor, copy its attributes
+            self._data = data._data
+            self._shape = data._shape
+            self._device = data._device
+
+        elif device == 'cpu':
             if isinstance(data, np.ndarray):
                 self._data = data
                 self._shape = self._data.shape
@@ -56,9 +61,13 @@ class Tensor:
         if device == self._device:
             return self
         elif device == 'cpu':
-            print(f"type of self._data: {type(self._data)}")
+            print(f"type of self._data before moving: {type(self._data)} (if int, then it's a pointer)")
             data = cuda.gpu_to_cpu(self._data, self._shape)
+            print(f"{data.dtype = }")
+            print(f'data[:5]: {data[0, :5] if data.ndim > 1 else data[:5]}')
         elif device == 'cuda':
+            print(f"{self._data.dtype = }")
+            print(f'data[:5]: {self._data[0, :5] if self._data.ndim > 1 else self._data[:5]}')
             data = cuda.cpu_to_gpu(self._data)
         else:
             raise ValueError(f"Unsupported device: {device}")

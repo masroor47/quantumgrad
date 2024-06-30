@@ -7,12 +7,14 @@ from quantumgrad.nn.parameter import Parameter
 
 class TestDeviceMemory(unittest.TestCase):
     def test_cpu_to_device_to_cpu(self):
+        print('\n\n\n------ test cpu to device to cpu ------')
         a = np.random.rand(100, 100).astype(np.float32)
         device_a = cuda.cpu_to_gpu(a)
         cpu_a = cuda.gpu_to_cpu(device_a, (100, 100))
         np.testing.assert_allclose(a, cpu_a, rtol=1e-5, atol=1e-5)
     
     def test_tensor_to_device(self):
+        print('\n\n\n------ test tensor to device ------')
         a = Tensor(np.random.rand(100, 100).astype(np.float32), device='cpu')
         device_a = a.to('cuda')
         self.assertEqual(device_a.device, 'cuda')
@@ -23,6 +25,7 @@ class TestDeviceMemory(unittest.TestCase):
         np.testing.assert_allclose(a.data, cpu_a.data, rtol=1e-5, atol=1e-5)
 
     def test_parameter_to_device(self):
+        print('\n\n\n------ test parameter to device ------')
         p = Parameter(np.random.rand(100, 100).astype(np.float32), device='cpu')
         device_p = p.to('cuda')
         self.assertEqual(device_p.device, 'cuda')
@@ -33,16 +36,20 @@ class TestDeviceMemory(unittest.TestCase):
         np.testing.assert_allclose(p.data, cpu_p.data, rtol=1e-5, atol=1e-5)
 
     def test_linear_to_device(self):
+        print('\n\n\n------ test linear to device ------')
         linear = nn.Linear(100, 100)
-        # print('moving linear to cuda first time')
-        device_linear = linear.to('cuda')
-        print(f'in test, device_linear.weight.device: {device_linear.weight.device}')
-        self.assertEqual(device_linear.weight.device, 'cuda')
-        cpu_linear = device_linear.to('cpu')
-        self.assertEqual(cpu_linear.weight.device, 'cpu')
-        # np.testing.assert_allclose(linear.weight.data, cpu_linear.weight.data, rtol=1e-5, atol=1e-5)
+        # copy the weights to variable for comparison
+        cpu_weights_data = linear.weight.data.copy()
+        linear.to('cuda')
+        print(f'in test, moved to device; {linear.weight.device = }\n\n')
+        self.assertEqual(linear.weight.device, 'cuda')
+        # cpu_linear = device_linear.to('cpu')
+        linear.to('cpu')
+        self.assertEqual(linear.weight.device, 'cpu')
+        np.testing.assert_allclose(linear.weight.data, cpu_weights_data, rtol=1e-5, atol=1e-5)
 
     def test_large_tensor_to_device(self):
+        print('\n\n\n------ test large tensor to device ------')
         a = Tensor(np.random.rand(1000, 1000).astype(np.float32), device='cpu')
         device_a = a.to('cuda')
         self.assertEqual(device_a.device, 'cuda')
@@ -50,6 +57,8 @@ class TestDeviceMemory(unittest.TestCase):
         np.testing.assert_allclose(a.data, cpu_a.data, rtol=1e-5, atol=1e-5)
 
     def test_module_with_multiple_parameters_to_device(self):
+        # TODO: rewrite this test to use in-place .to() instead of returning new object
+        print('\n\n\n------ test module with multiple parameters to device ------')
         class SimpleModule(nn.Module):
             def __init__(self):
                 super(SimpleModule, self).__init__()

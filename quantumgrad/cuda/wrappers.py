@@ -38,17 +38,19 @@ util_lib.copy_gpu_to_cpu.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_
 
 
 def cpu_to_gpu(data):
-    print('cuda wrapper: moving cpu to gpu')
+    # print('cuda wrapper: moving cpu to gpu')
     total_elements = data.size
-    gpu_data = util_lib.allocate_gpu_memory(total_elements * np.dtype(np.float32).itemsize)
-    util_lib.copy_cpu_to_gpu(data.ctypes.data, gpu_data, total_elements)
+    total_size_in_bytes = total_elements * np.float32().nbytes
+    gpu_data = util_lib.allocate_gpu_memory(total_size_in_bytes)
+    util_lib.copy_cpu_to_gpu(data.ctypes.data, gpu_data, total_size_in_bytes)
     return gpu_data
 
 def gpu_to_cpu(gpu_data, shape):
-    print('cuda wrapper: moving gpu to cpu')
+    # print('cuda wrapper: moving gpu to cpu')
     cpu_data = np.empty(shape, dtype=np.float32)
     total_elements = np.prod(shape)
-    util_lib.copy_gpu_to_cpu(gpu_data, cpu_data.ctypes.data, total_elements)
+    total_size_in_bytes = total_elements * np.float32().nbytes
+    util_lib.copy_gpu_to_cpu(gpu_data, cpu_data.ctypes.data, total_size_in_bytes)
     return cpu_data
 
 def free_gpu_memory(gpu_data):

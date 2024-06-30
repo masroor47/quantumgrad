@@ -31,13 +31,14 @@ class Module:
                     # print(f'key: {key}; value: {value}; \nparam: {param}; \nnew_param: {new_param}')
                     setattr(self, key, new_param)
 
-            print()
+            # print()
         
         for name, module in self.__dict__.items():
             if isinstance(module, Module):
-                print("moving submodules to device")
-                print(f"{name = };  {module = }")
-                setattr(self, name, module.to(device))
+                # print("moving submodules to device")
+                # print(f"{name = };  {module = }")
+                module.to(device)
+                # setattr(self, name, module.to(device))
 
         # print device of every parameter
         # print()
@@ -50,7 +51,7 @@ class Module:
 
 
         self._device = device
-        print(f"Moved module to {self._device}")
+        # print(f"Moved module to {self._device}")
         # return self
 
     def parameters(self):

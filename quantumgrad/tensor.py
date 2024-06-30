@@ -4,7 +4,7 @@ from . import cuda
 class Tensor:
     def __init__(self, data, device='cpu', requires_grad=False, shape=None):
         # print('Creating tensor')
-        assert device == 'cpu' or (device == 'cuda' and shape is not None), 'shape must be provided for cuda tensors'
+        assert device == 'cpu' or isinstance(data, Tensor) or (device == 'cuda' and shape is not None), 'shape must be provided for cuda tensors'
         self._device = device
         self._requires_grad = requires_grad
         self._grad = None
@@ -30,7 +30,7 @@ class Tensor:
         else:
             raise ValueError(f"Unsupported device: {device}")
         
-        print(f'Created tensor on {device} with shape {self._shape}')
+        print(f'Created tensor on {self._device} with shape {self._shape}, {self._data = }')
     
     def __del__(self):
         if self._device == 'cuda':
@@ -74,10 +74,13 @@ class Tensor:
         
         # self._device = device
 
-        new_tensor = Tensor(data, device=device, requires_grad=self._requires_grad, shape=self._shape)
+        new_tensor = self._create_new(data, device)
         if self._grad is not None:
             new_tensor._grad = self._grad.to(device)
         return new_tensor
+
+    def _create_new(self, data, device):
+        return Tensor(data, shape=self.shape, device=device, requires_grad=self._requires_grad)
     
     def numel(self):
         if self._device == 'cpu':

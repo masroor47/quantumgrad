@@ -1,6 +1,15 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 
+#define KERNEL_CHECK() \
+    do { \
+        cudaError_t kernelErr = cudaGetLastError(); \
+        if (kernelErr != cudaSuccess) { \
+            fprintf(stderr, "Kernel launch failed in %s at line %d: %s\n", __FILE__, __LINE__, cudaGetErrorString(kernelErr)); \
+            exit(EXIT_FAILURE); \
+        } \
+    } while(0)
+
 __global__ void add_matrices(float *a, float *b, float *c, int rows, int cols) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -122,4 +131,20 @@ extern "C" void matmul_simple(float *left, float *right, float *result, int lrow
     cudaFree(d_left);
     cudaFree(d_right);
     cudaFree(d_result);
+}
+
+extern "C" void multiply_add(float *input, float *matrix, float *bias, float *output, int rows, int cols) {
+
+    int BLOCK_SIZE = 16;
+    int GRID_SIZE_ROWS = (int)ceil((float)rows / BLOCK_SIZE);
+    int GRID_SIZE_COLS = (int)ceil((float)cols / BLOCK_SIZE);
+    
+    dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 gridSize(GRID_SIZE_COLS, GRID_SIZE_ROWS);
+
+    matmul_simple_<<<gridSize, blockSize>>>(matrix, input, output, rows, cols, cols, 1);
+    KERNEL_CHECK();
+
+    add_matrices<<<gridSize, blockSize>>>(output, bias, output, rows, 1);
+    KERNEL_CHECK();
 }

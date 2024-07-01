@@ -15,6 +15,9 @@ class Linear(Module):
 
     def forward(self, input):
         if self._device == 'cuda':
-            return cuda.linear(input, self.weight._data, self.bias._data)
+            # if input is Tensor, send .data
+            if hasattr(input, 'data'):
+                input = input.data
+            return cuda.linear(input, self.weight._data, self.bias._data, self.in_features, self.out_features)
         return np.dot(input, self.weight._data.T) + self.bias._data
     

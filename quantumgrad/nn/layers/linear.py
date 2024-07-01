@@ -8,8 +8,8 @@ class Linear(Module):
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = Parameter(np.random.randn(out_features, in_features))
-        self.bias = Parameter(np.zeros(out_features))
+        self.weight = Parameter(np.random.randn(out_features, in_features).astype(np.float32))
+        self.bias = Parameter(np.zeros(out_features).astype(np.float32))
         self.add_parameter(self.weight)
         self.add_parameter(self.bias)
 
@@ -17,3 +17,4 @@ class Linear(Module):
         if self._device == 'cuda':
             return cuda.linear(input, self.weight._data, self.bias._data)
         return np.dot(input, self.weight._data.T) + self.bias._data
+    

@@ -11,11 +11,21 @@ class Module:
 
     def to(self, device):
         if self._device == device:
-            return self
-        for param in self.parameters():
-            param.to(device)
+            return 
+
+        for i, param in enumerate(self._parameters):
+            new_param = param.to(device)
+            self._parameters[i] = new_param
+            # Update corresponding attribute if it exists (weight, bias)
+            for key, value in self.__dict__.items():
+                if value is param:
+                    setattr(self, key, new_param)
+        
+        for name, module in self.__dict__.items():
+            if isinstance(module, Module):
+                module.to(device)
+
         self._device = device
-        return self
 
     def parameters(self):
         params = self._parameters[:]

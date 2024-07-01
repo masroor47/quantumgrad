@@ -17,7 +17,8 @@ class TestLinearForward(unittest.TestCase):
         np.testing.assert_allclose(y, np_result, rtol=1e-5, atol=1e-5)
 
     def test_linear_forward_cuda(self):
-        input_dim = 100
+        # TODO:  in out dimensions don't match rows cols in linear layer. Doesn't work with different dimensions.
+        input_dim = 200
         output_dim = 100
         linear_layer = nn.Linear(input_dim, output_dim)
         cpu_weights_data = linear_layer.weight.data.copy()

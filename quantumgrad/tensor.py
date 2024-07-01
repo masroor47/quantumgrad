@@ -3,14 +3,12 @@ from . import cuda
 
 class Tensor:
     def __init__(self, data, device='cpu', requires_grad=False, shape=None):
-        # print('Creating tensor')
         assert device == 'cpu' or isinstance(data, Tensor) or (device == 'cuda' and shape is not None), 'shape must be provided for cuda tensors'
         self._device = device
         self._requires_grad = requires_grad
         self._grad = None
 
         if isinstance(data, Tensor):
-            # If data is already a Tensor, copy its attributes
             self._data = data._data
             self._shape = data._shape
             self._device = data._device
@@ -26,8 +24,6 @@ class Tensor:
         else:
             raise ValueError(f"Unsupported device: {device}")
         
-        # print(f'Created tensor on {self._device} with shape {self._shape}, {self._data = }')
-    
     def __del__(self):
         if self._device == 'cuda':
             cuda.free_gpu_memory(self._data)
@@ -53,17 +49,11 @@ class Tensor:
         return self._shape
 
     def to(self, device):
-        # print(f"Moving tensor to {device}")
         if device == self._device:
             return self
         elif device == 'cpu':
-            # print(f"type of self._data before moving: {type(self._data)} (if int, then it's a pointer)")
             data = cuda.gpu_to_cpu(self._data, self._shape)
-            # print(f"{data.dtype = }")
-            # print(f'data[:5]: {data[0, :5] if data.ndim > 1 else data[:5]}')
         elif device == 'cuda':
-            # print(f"{self._data.dtype = }")
-            # print(f'data[:5]: {self._data[0, :5] if self._data.ndim > 1 else self._data[:5]}')
             data = cuda.cpu_to_gpu(self._data)
         else:
             raise ValueError(f"Unsupported device: {device}")
@@ -80,5 +70,4 @@ class Tensor:
         if self._device == 'cpu':
             return self._data.size
         else:
-            # TODO: count param size if data is on cuda
-            return cuda.numel(self._data)
+            return np.prod(self._shape)

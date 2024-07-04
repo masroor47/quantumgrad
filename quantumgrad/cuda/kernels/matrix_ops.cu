@@ -133,18 +133,25 @@ extern "C" void matmul_simple(float *left, float *right, float *result, int lrow
     cudaFree(d_result);
 }
 
-extern "C" void multiply_add(float *input, float *matrix, float *bias, float *output, int rows, int cols) {
+extern "C" void multiply_add(float *input, 
+                             float *matrix, 
+                             float *bias, 
+                             float *output, 
+                             int lrows, 
+                             int lcols, 
+                             int rrows, 
+                             int rcols) {
 
     int BLOCK_SIZE = 16;
-    int GRID_SIZE_ROWS = (int)ceil((float)rows / BLOCK_SIZE);
-    int GRID_SIZE_COLS = (int)ceil((float)cols / BLOCK_SIZE);
+    int GRID_SIZE_ROWS = (int)ceil((float)lrows / BLOCK_SIZE);
+    int GRID_SIZE_COLS = (int)ceil((float)rcols / BLOCK_SIZE);
     
     dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
     dim3 gridSize(GRID_SIZE_COLS, GRID_SIZE_ROWS);
 
-    matmul_simple_<<<gridSize, blockSize>>>(matrix, input, output, rows, cols, cols, 1);
+    matmul_simple_<<<gridSize, blockSize>>>(matrix, input, output, lrows, lcols, rrows, rcols);
     KERNEL_CHECK();
 
-    add_matrices<<<gridSize, blockSize>>>(output, bias, output, rows, 1);
-    KERNEL_CHECK();
+    // add_matrices<<<gridSize, blockSize>>>(output, bias, output, lrows, rcols);
+    // KERNEL_CHECK();
 }

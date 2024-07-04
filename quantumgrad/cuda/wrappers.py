@@ -23,7 +23,13 @@ kernel_lib.matmul_simple.argtypes = [ctypes.POINTER(ctypes.c_float),
                               ctypes.c_int,
                               ctypes.c_int]
 
-# Define the return types and argument types for the CUDA functions
+kernel_lib.multiply_add.argtypes = [ctypes.c_void_p, 
+                                    ctypes.c_void_p, 
+                                    ctypes.c_void_p, 
+                                    ctypes.c_void_p, 
+                                    ctypes.c_int, 
+                                    ctypes.c_int]
+
 util_lib.allocate_gpu_memory.restype = ctypes.c_void_p
 util_lib.allocate_gpu_memory.argtypes = [ctypes.c_size_t]
 
@@ -59,10 +65,14 @@ def free_gpu_memory(gpu_data):
 def relu(gpu_data, size):
     kernel_lib.relu_kernel(gpu_data, size)
 
-def linear(gpu_input, gpu_weights, gpu_bias, m, n, k):
+def linear(gpu_input, gpu_weights, gpu_bias, rows, cols):
+    '''
+    Multiplies a matrix by vector and adds a bias.
+    Input, weights and bias are all pointers to GPU memory.
+    '''
     # TODO: figure out how to manage intermediate memory!!!
-    gpu_output = kernel_lib.allocate_gpu_memory(m * n * ctypes.sizeof(ctypes.c_float))
-    kernel_lib.linear_kernel(gpu_input, gpu_weights, gpu_bias, gpu_output, m, n, k)
+    gpu_output = util_lib.allocate_gpu_memory(cols * np.float32().nbytes)
+    kernel_lib.multiply_add(gpu_input, gpu_weights, gpu_bias, gpu_output, rows, cols)
     return gpu_output
 
 def add_matrices(a, b):

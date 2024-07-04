@@ -65,14 +65,14 @@ def free_gpu_memory(gpu_data):
 def relu(gpu_data, size):
     kernel_lib.relu_kernel(gpu_data, size)
 
-def linear(gpu_input, gpu_weights, gpu_bias, rows, cols):
+def linear(gpu_input, gpu_weights, gpu_bias, lrows, lcols, rrows, rcols):
     '''
     Multiplies a matrix by vector and adds a bias.
     Input, weights and bias are all pointers to GPU memory.
     '''
     # TODO: figure out how to manage intermediate memory!!!
-    gpu_output = util_lib.allocate_gpu_memory(cols * np.float32().nbytes)
-    kernel_lib.multiply_add(gpu_input, gpu_weights, gpu_bias, gpu_output, rows, cols)
+    gpu_output = util_lib.allocate_gpu_memory(lrows * rcols * np.float32().nbytes)
+    kernel_lib.multiply_add(gpu_input, gpu_weights, gpu_bias, gpu_output, lrows, lcols, rrows, rcols)
     return gpu_output
 
 def add_matrices(a, b):

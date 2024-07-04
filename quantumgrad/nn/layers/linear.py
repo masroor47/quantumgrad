@@ -20,8 +20,14 @@ class Linear(Module):
         if self._device == 'cuda':
             assert isinstance(input, Tensor), 'Input must be a Tensor'
             assert input.device == 'cuda', 'Input must be on cuda device'
-            input = input._data
-            out_data = cuda.linear(input, self.weight._data, self.bias._data, self.out_features, self.in_features)
-            return Tensor(out_data, device='cuda', shape=(self.out_features,))
+            input_rows, input_cols = input.shape
+            out_data = cuda.linear(input._data, 
+                                   self.weight._data, 
+                                   self.bias._data, 
+                                   self.out_features, 
+                                   self.in_features, 
+                                   input_rows, 
+                                   input_cols)
+            return Tensor(out_data, device='cuda', shape=(self.out_features,input_cols))
         return np.dot(input, self.weight._data.T) + self.bias._data
     

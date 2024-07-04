@@ -15,10 +15,10 @@ class Linear(Module):
 
     def forward(self, input):
         if self._device == 'cuda':
-            # if input is Tensor, send .data
-            if hasattr(input, 'data'):
-                input = input.data
-            out_data = cuda.linear(input, self.weight._data, self.bias._data, self.in_features, self.out_features)
+            assert isinstance(input, Tensor), 'Input must be a Tensor'
+            assert input.device == 'cuda', 'Input must be on cuda device'
+            input = input._data
+            out_data = cuda.linear(input, self.weight._data, self.bias._data, self.out_features, self.in_features)
             return Tensor(out_data, device='cuda', shape=(self.out_features,))
         return np.dot(input, self.weight._data.T) + self.bias._data
     

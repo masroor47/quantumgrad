@@ -7,7 +7,7 @@ class TestLinearForward(unittest.TestCase):
     Test the forward pass of the Linear layer.
     '''
     def test_linear_forward_cpu(self):
-        input_dim = 100
+        input_dim = 200
         output_dim = 100
         linear = nn.Linear(input_dim, output_dim)
         x = np.random.rand(input_dim).astype(np.float32)
@@ -17,8 +17,7 @@ class TestLinearForward(unittest.TestCase):
         np.testing.assert_allclose(y, np_result, rtol=1e-5, atol=1e-5)
 
     def test_linear_forward_cuda(self):
-        # TODO:  in out dimensions don't match rows cols in linear layer. Doesn't work with different dimensions.
-        input_dim = 100
+        input_dim = 200
         output_dim = 100
         linear_layer = nn.Linear(input_dim, output_dim)
         cpu_weights_data = linear_layer.weight.data.copy()

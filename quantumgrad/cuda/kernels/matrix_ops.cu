@@ -35,6 +35,21 @@ __global__ void matmul_simple_(float *left, float *right, float *result, int lro
     }
 }
 
+__global__ void matmul_simple_add_bias_(float *left, float *right, float *bias, float *result, int lrows, int lcols, int rrows, int rcols) {
+    // current row of left, current col of right
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (row < lrows && col < rcols) {
+        float temp_sum = 0.0;
+        // dot product
+        for (int i = 0; i < lcols; i++) {
+            temp_sum += left[row * lcols + i] * right[i * rcols + col];
+        }
+        result[row * rcols + col] = temp_sum + bias[col];
+    }
+}
+
 void cudaCheckError(cudaError_t err, const char* msg) {
     if (err != cudaSuccess) {
         printf("%s: %s\n", msg, cudaGetErrorString(err));
@@ -149,7 +164,7 @@ extern "C" void multiply_add(float *input,
     dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
     dim3 gridSize(GRID_SIZE_COLS, GRID_SIZE_ROWS);
 
-    matmul_simple_<<<gridSize, blockSize>>>(matrix, input, output, lrows, lcols, rrows, rcols);
+    matmul_simple_add_bias_<<<gridSize, blockSize>>>(matrix, input, bias, output, lrows, lcols, rrows, rcols);
     KERNEL_CHECK();
 
     // add_matrices<<<gridSize, blockSize>>>(output, bias, output, lrows, rcols);

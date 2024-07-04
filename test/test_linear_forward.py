@@ -26,7 +26,7 @@ class TestLinearForward(unittest.TestCase):
         self.assertEqual(linear_layer.weight.device, 'cuda')
         np_input = np.random.rand(input_dim).astype(np.float32)
         tensor_input = Tensor(np_input).to('cuda')
-        tensor_output = linear_layer.forward(tensor_input).to('cpu')
+        tensor_output = linear_layer(tensor_input).to('cpu')
         np_output = np.dot(np_input, cpu_weights_data.T) + cpu_bias_data
         np.testing.assert_allclose(tensor_output.data, np_output, rtol=1e-5, atol=1e-5)
 

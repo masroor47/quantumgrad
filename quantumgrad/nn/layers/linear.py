@@ -12,6 +12,9 @@ class Linear(Module):
         self.bias = Parameter(np.zeros(out_features).astype(np.float32))
         self.add_parameter(self.weight)
         self.add_parameter(self.bias)
+    
+    def __call__(self, input):
+        return self.forward(input)
 
     def forward(self, input):
         if self._device == 'cuda':

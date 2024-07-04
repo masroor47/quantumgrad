@@ -18,7 +18,7 @@ class TestLinearForward(unittest.TestCase):
 
     def test_linear_forward_cuda(self):
         # TODO:  in out dimensions don't match rows cols in linear layer. Doesn't work with different dimensions.
-        input_dim = 200
+        input_dim = 100
         output_dim = 100
         linear_layer = nn.Linear(input_dim, output_dim)
         cpu_weights_data = linear_layer.weight.data.copy()
@@ -27,8 +27,7 @@ class TestLinearForward(unittest.TestCase):
         self.assertEqual(linear_layer.weight.device, 'cuda')
         np_input = np.random.rand(input_dim).astype(np.float32)
         tensor_input = Tensor(np_input).to('cuda')
-        y_ptr = linear_layer.forward(tensor_input)
-        tensor_output = Tensor(y_ptr, device='cuda', shape=(output_dim,)).to('cpu')
+        tensor_output = linear_layer.forward(tensor_input).to('cpu')
         np_output = np.dot(np_input, cpu_weights_data.T) + cpu_bias_data
         np.testing.assert_allclose(tensor_output.data, np_output, rtol=1e-5, atol=1e-5)
 

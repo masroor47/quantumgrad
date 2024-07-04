@@ -1,7 +1,7 @@
 import numpy as np
 from quantumgrad.nn.module import Module 
 from quantumgrad.nn.parameter import Parameter
-from quantumgrad import cuda
+from quantumgrad import cuda, Tensor
 
 class Linear(Module):
     def __init__(self, in_features, out_features):
@@ -18,6 +18,7 @@ class Linear(Module):
             # if input is Tensor, send .data
             if hasattr(input, 'data'):
                 input = input.data
-            return cuda.linear(input, self.weight._data, self.bias._data, self.in_features, self.out_features)
+            out_data = cuda.linear(input, self.weight._data, self.bias._data, self.in_features, self.out_features)
+            return Tensor(out_data, device='cuda', shape=(self.out_features,))
         return np.dot(input, self.weight._data.T) + self.bias._data
     

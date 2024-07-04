@@ -17,7 +17,7 @@ class Tensor:
                 self._data = data
             else:
                 self._data = np.array(data)
-            self._shape = self._data.shape
+            self._shape = self._data.shape if len(self._data.shape) > 1 else (self._data.shape[0], 1)
         elif device == 'cuda':
             self._data = data
             self._shape = shape

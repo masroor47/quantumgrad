@@ -75,6 +75,15 @@ def linear(gpu_input, gpu_weights, gpu_bias, lrows, lcols, rrows, rcols):
     kernel_lib.multiply_add(gpu_input, gpu_weights, gpu_bias, gpu_output, lrows, lcols, rrows, rcols)
     return gpu_output
 
+def linear_relu(gpu_input, gpu_weights, gpu_bias, lrows, lcols, rrows, rcols):
+    '''
+    Multiplies a matrix by vector and adds a bias, then applies ReLU.
+    Input, weights and bias are all pointers to GPU memory.
+    '''
+    gpu_output = util_lib.allocate_gpu_memory(lrows * rcols * np.float32().nbytes)
+    kernel_lib.multiply_add_relu(gpu_input, gpu_weights, gpu_bias, gpu_output, lrows, lcols, rrows, rcols)
+    return gpu_output
+
 def add_matrices(a, b):
     assert a.shape == b.shape, "Matrices must have the same shape."
 

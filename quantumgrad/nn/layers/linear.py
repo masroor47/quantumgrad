@@ -29,5 +29,10 @@ class Linear(Module):
                                    input_rows, 
                                    input_cols)
             return Tensor(out_data, device='cuda', shape=(self.out_features,input_cols))
-        return np.dot(input, self.weight._data.T) + self.bias._data
+        
+        # expand bias to match the batch size
+        if input.ndim == 2:
+            return np.dot(self.weight._data, input) + self.bias._data[:, np.newaxis]
+        else:
+            return np.dot(self.weight._data, input) + self.bias._data
     

@@ -46,7 +46,7 @@ __global__ void matmul_simple_add_bias_(float *left, float *right, float *bias, 
         for (int i = 0; i < lcols; i++) {
             temp_sum += left[row * lcols + i] * right[i * rcols + col];
         }
-        result[row * rcols + col] = temp_sum + bias[col];
+        result[row * rcols + col] = temp_sum + bias[row];
     }
 }
 
@@ -166,7 +166,4 @@ extern "C" void multiply_add(float *input,
 
     matmul_simple_add_bias_<<<gridSize, blockSize>>>(matrix, input, bias, output, lrows, lcols, rrows, rcols);
     KERNEL_CHECK();
-
-    // add_matrices<<<gridSize, blockSize>>>(output, bias, output, lrows, rcols);
-    // KERNEL_CHECK();
 }

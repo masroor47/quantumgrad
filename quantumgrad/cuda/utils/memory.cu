@@ -13,6 +13,7 @@
 extern "C" void* allocate_gpu_memory(size_t size) {
     void* ptr;
     CUDA_CHECK(cudaMalloc(&ptr, size));
+    // printf("Allocated GPU memory %p\n", ptr);
     return ptr;
 }
 
@@ -22,13 +23,14 @@ extern "C" void free_gpu_memory(void* ptr) {
 }
 
 extern "C" void copy_cpu_to_gpu(const void* host_data, void* device_data, size_t size) {
+    // printf("CUDA___cpu_to_gpu_______________\n");
     // printf("Device data: %p\n", device_data);
     // printf("Host data: %p\n", host_data);
-    // print size of data to be copied in bytes
+    // // print size of data to be copied in bytes
     // printf("Size: %ld\n", size);
-    // print first 10 elements
+    // // print first 10 elements
     // float* data = (float*)host_data;
-    // printf("CUDA _______________\n");
+    // printf("first 10 elements:\n");
     // for (int i = 0; i < 10; i++) {
     //     printf("%f ", data[i]);
     // }
@@ -38,15 +40,16 @@ extern "C" void copy_cpu_to_gpu(const void* host_data, void* device_data, size_t
 }
 
 extern "C" void copy_gpu_to_cpu(const void* device_data, void* host_data, size_t size) {
-    // print device data which is a pointer
+    // printf("CUDA___gpu_to_cpu_______________\n");
+    // // print device data which is a pointer
     // printf("Device data: %p\n", device_data);
     // printf("Host data: %p\n", host_data);
-    // print size of data to be copied in bytes
+    // // print size of data to be copied in bytes
     // printf("Size: %ld\n", size);
     CUDA_CHECK(cudaMemcpy(host_data, device_data, size, cudaMemcpyDeviceToHost));
     // print first 10 elements
     // float* data = (float*)host_data;
-    // printf("CUDA _______________\n");
+    // printf("first 10 elements:\n");
     // for (int i = 0; i < 10; i++) {
     //     printf("%f ", data[i]);
     // }

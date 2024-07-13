@@ -35,4 +35,21 @@ class Linear(Module):
             return np.dot(self.weight._data, input) + self.bias._data[:, np.newaxis]
         else:
             return np.dot(self.weight._data, input) + self.bias._data
-    
+        
+    def forward_relu(self, input):
+        if self._device == 'cuda':
+            assert isinstance(input, Tensor), 'Input must be a Tensor'
+            assert input.device == 'cuda', 'Input must be on cuda device'
+            input_rows, input_cols = input.shape
+            out_data = cuda.linear_relu(input._data, 
+                                        self.weight._data, 
+                                        self.bias._data, 
+                                        self.out_features, 
+                                        self.in_features, 
+                                        input_rows, 
+                                        input_cols)
+            return Tensor(out_data, device='cuda', shape=(self.out_features,input_cols))
+        if input.ndim == 2:
+            return np.maximum(0, np.dot(self.weight._data, input) + self.bias._data[:, np.newaxis])
+        else:
+            return np.maximum(0, np.dot(self.weight._data, input) + self.bias._data)

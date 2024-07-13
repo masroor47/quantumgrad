@@ -30,6 +30,13 @@ kernel_lib.multiply_add.argtypes = [ctypes.c_void_p,
                                     ctypes.c_int, 
                                     ctypes.c_int]
 
+kernel_lib.multiply_add_relu.argtypes = [ctypes.c_void_p, 
+                                    ctypes.c_void_p, 
+                                    ctypes.c_void_p, 
+                                    ctypes.c_void_p, 
+                                    ctypes.c_int, 
+                                    ctypes.c_int]
+
 util_lib.allocate_gpu_memory.restype = ctypes.c_void_p
 util_lib.allocate_gpu_memory.argtypes = [ctypes.c_size_t]
 
@@ -54,6 +61,7 @@ def cpu_to_gpu(data):
 def gpu_to_cpu(gpu_data, shape):
     # print('cuda wrapper: moving gpu to cpu')
     cpu_data = np.empty(shape, dtype=np.float32)
+    # print('created empty cpu data at', hex(cpu_data.ctypes.data))
     total_elements = np.prod(shape)
     total_size_in_bytes = total_elements * np.float32().nbytes
     util_lib.copy_gpu_to_cpu(gpu_data, cpu_data.ctypes.data, total_size_in_bytes)
@@ -65,7 +73,7 @@ def free_gpu_memory(gpu_data):
 def relu(gpu_data, size):
     kernel_lib.relu_kernel(gpu_data, size)
 
-def linear(gpu_input, gpu_weights, gpu_bias, lrows, lcols, rrows, rcols):
+def linear(gpu_input, gpu_weights, gpu_bias, lrows: int, lcols: int, rrows: int, rcols: int) -> ctypes.c_void_p:
     '''
     Multiplies a matrix by vector and adds a bias.
     Input, weights and bias are all pointers to GPU memory.
@@ -73,6 +81,15 @@ def linear(gpu_input, gpu_weights, gpu_bias, lrows, lcols, rrows, rcols):
     # TODO: figure out how to manage intermediate memory!!!
     gpu_output = util_lib.allocate_gpu_memory(lrows * rcols * np.float32().nbytes)
     kernel_lib.multiply_add(gpu_input, gpu_weights, gpu_bias, gpu_output, lrows, lcols, rrows, rcols)
+    return gpu_output
+
+def linear_relu(gpu_input, gpu_weights, gpu_bias, lrows: int, lcols: int, rrows: int, rcols: int):
+    '''
+    Multiplies a matrix by vector and adds a bias, then applies ReLU.
+    Input, weights and bias are all pointers to GPU memory.
+    '''
+    gpu_output = util_lib.allocate_gpu_memory(lrows * rcols * np.float32().nbytes)
+    kernel_lib.multiply_add_relu(gpu_input, gpu_weights, gpu_bias, gpu_output, lrows, lcols, rrows, rcols)
     return gpu_output
 
 def add_matrices(a, b):

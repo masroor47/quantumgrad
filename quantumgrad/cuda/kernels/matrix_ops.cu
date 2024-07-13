@@ -50,6 +50,21 @@ __global__ void matmul_simple_add_bias_(const float *left, const float *right, c
     }
 }
 
+__global__ void matmul_simple_add_bias_relu_(const float *left, const float *right, const float *bias, float *result, int lrows, int lcols, int rrows, int rcols) {
+    // current row of left, current col of right
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (row < lrows && col < rcols) {
+        float temp_sum = 0.0;
+        // dot product
+        for (int i = 0; i < lcols; i++) {
+            temp_sum += left[row * lcols + i] * right[i * rcols + col];
+        }
+        result[row * rcols + col] = fmaxf(temp_sum + bias[row], 0.0);
+    }
+}
+
 void cudaCheckError(cudaError_t err, const char* msg) {
     if (err != cudaSuccess) {
         printf("%s: %s\n", msg, cudaGetErrorString(err));
@@ -180,6 +195,45 @@ extern "C" void multiply_add(
     );
 
     matmul_simple_add_bias_<<<gridSize, blockSize>>>(
+        matrix, input, bias, output, 
+        matrix_rows, matrix_cols, input_rows, input_cols
+    );
+
+    KERNEL_CHECK();
+}
+
+/**
+ * Performs matrix multiplication with bias addition and ReLU activation: output = ReLU((input * matrix) + bias)
+ *
+ * @param input Input matrix
+ * @param matrix Weight matrix
+ * @param bias Bias vector
+ * @param output Output matrix
+ * @param matrix_rows Number of rows in the weight matrix
+ * @param matrix_cols Number of columns in the weight matrix
+ * @param input_rows Number of rows in the input matrix
+ * @param input_cols Number of columns in the input matrix
+ */
+extern "C" void multiply_add_relu(
+    const float *input, 
+    const float *matrix, 
+    const float *bias, 
+    float *output, 
+    int matrix_rows, 
+    int matrix_cols, 
+    int input_rows, 
+    int input_cols
+) {
+    
+    constexpr int BLOCK_SIZE = 16;
+    
+    dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 gridSize(
+        (input_cols + BLOCK_SIZE - 1) / BLOCK_SIZE,
+        (matrix_rows + BLOCK_SIZE - 1) / BLOCK_SIZE
+    );
+
+    matmul_simple_add_bias_relu_<<<gridSize, blockSize>>>(
         matrix, input, bias, output, 
         matrix_rows, matrix_cols, input_rows, input_cols
     );

@@ -26,6 +26,7 @@ class Tensor:
         
     def __del__(self):
         if self._device == 'cuda':
+            # print('Tensor: Freeing GPU memory')
             cuda.free_gpu_memory(self._data)
         
     @property
